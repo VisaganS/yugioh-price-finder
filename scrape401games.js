@@ -68,5 +68,3 @@ async function scrape401games(cardName) {
         await browser.close();
     }
 }
-
-scrape401games('Bystial Lubellion');
