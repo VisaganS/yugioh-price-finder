@@ -1,15 +1,15 @@
 const puppeteer = require('puppeteer');
 
 
-async function scrape401games(cardName) {
+async function scrapeDollys(cardName) {
     // format card name and URL
     const searchTerm = cardName.trim().replace(/\s+/g, '+');
-    const searchURL = `https://store.401games.ca/pages/search-results?q=${searchTerm}`
+    const searchURL = `https://www.dollys.ca/products/search?q=${searchTerm}&c=228`
     const searchTerms = cardName.trim().toLowerCase().split(/\s+/); // Used to filter the searched card name apart from similar names returned by webscraper
 
     console.log("Navigating to:", searchURL);
     // launch headless browser
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({headless: false});
     const page = await browser.newPage();
 
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
@@ -21,21 +21,16 @@ async function scrape401games(cardName) {
 
         // evaluate page and extract product details
         const products = await page.evaluate((searchTerms) => {
-            const shadowHost = document.querySelector('#fast-simon-serp-app');
-            if(!shadowHost || !shadowHost.shadowRoot) {
-                return [];
-            }
-            
-            const shadowRoot = shadowHost.shadowRoot;
-            const productCards = shadowRoot.querySelectorAll('.product-card');
+         
+            const productCards = document.querySelectorAll('.inner');
 
             return Array.from(productCards).map(card => {
                 // extract product name
-                const titleEl = card.querySelector('.product-card-items-wrapper .info-container .title-container .title-wrapper .title');
+                const titleEl = card.querySelector('.image-meta .meta .name');
                 const name = titleEl ? titleEl.textContent.trim() : null;
                 
                 // extract product price
-                const priceEl = card.querySelector('.product-card-items-wrapper .info-container .price-container .price')
+                const priceEl = card.querySelector('.name')
                 let price = priceEl ? priceEl.textContent.trim() : null;
                 //remove CAD from price text
                 if (price) {
@@ -56,7 +51,7 @@ async function scrape401games(cardName) {
                     const lowerName = product.name.toLowerCase();
                     return searchTerms.every(term => lowerName.includes(term));
                 } 
-            }); 
+            });
         }, searchTerms);
         console.log('Products: ', products);
         return products;
@@ -68,3 +63,5 @@ async function scrape401games(cardName) {
         await browser.close();
     }
 }
+
+scrapeDollys("Dark Magician");
