@@ -29,19 +29,28 @@ async function scrapeDollys(cardName) {
                 const titleEl = card.querySelector('.image-meta .meta .name');
                 const name = titleEl ? titleEl.textContent.trim() : null;
                 
-                // extract product price
-                const priceEl = card.querySelector('.name')
-                let price = priceEl ? priceEl.textContent.trim() : null;
-                //remove CAD from price text
-                if (price) {
-                    price = price.replace('CAD', '').trim();
-                }
+                // get price, condition, and stock of card
+                const variants = card.querySelectorAll('.variant-row');
 
-                // extract availability
-                const stockEl = card.querySelector('.product-card-items-wrapper .image-wrapper .in-stock-wrapper')
-                let stock = stockEl ? 'In Stock' : 'Out of Stock';
+                let priceOptions = Array.from(variants).map(variant => {
+                    const conditionEl = variant.querySelector('.variant-main-info .variant-description');
+                    const condition = conditionEl ? conditionEl.textContent.trim() : null;
 
-                return { name, price, stock };
+                    const stockEl = variant.querySelector('.variant-main-info .variant-qty');
+                    let stock = stockEl ? stockEl.textContent.trim(): null;
+                    if (stock && stock.includes("In Stock")){
+                        stock = "In Stock";
+                    }
+                    console.log(stock)
+                    // const priceEl = variant.querySelector('.variant-buttons .add-to-cart-form .product-price-qty .price');
+                    // const price = priceEl ? price.textContent.trim(): null;
+                    // if (price){
+                    //    price = price.replace('CAD$ ','$').trim();
+                    // }
+
+                    return { condition, stock };
+                })
+                return { name, priceOptions };
             })
             // filter out products that don't include all search terms
             .filter(product => {
