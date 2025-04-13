@@ -21,7 +21,7 @@ async function scrapeDollys(cardName) {
 
         // evaluate page and extract product details
         const products = await page.evaluate((searchTerms) => {
-         
+
             const productCards = document.querySelectorAll('.product .inner');
 
             return Array.from(productCards).map(card => {
@@ -73,7 +73,7 @@ async function scrapeDollys(cardName) {
                 } 
             });
         }, searchTerms);
-        // console.log('Products: ', products);
+
         console.log(JSON.stringify(products, null, 2));
 
         return products;
@@ -85,5 +85,3 @@ async function scrapeDollys(cardName) {
         await browser.close();
     }
 }
-
-scrapeDollys("Dark Magician");
