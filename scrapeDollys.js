@@ -9,7 +9,7 @@ async function scrapeDollys(cardName) {
 
     console.log("Navigating to:", searchURL);
     // launch headless browser
-    const browser = await puppeteer.launch({headless: false});
+    const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
@@ -22,7 +22,7 @@ async function scrapeDollys(cardName) {
         // evaluate page and extract product details
         const products = await page.evaluate((searchTerms) => {
          
-            const productCards = document.querySelectorAll('.inner');
+            const productCards = document.querySelectorAll('.product .inner');
 
             return Array.from(productCards).map(card => {
                 // extract product name
@@ -30,29 +30,40 @@ async function scrapeDollys(cardName) {
                 const name = titleEl ? titleEl.textContent.trim() : null;
                 
                 // get price, condition, and stock of card
-                const variants = card.querySelectorAll('.variant-row');
+                const variants = card.querySelectorAll('.variants .variant-row');
 
                 let priceOptions = Array.from(variants).map(variant => {
+
+                    //extract condition
                     const conditionEl = variant.querySelector('.variant-main-info .variant-description');
                     const condition = conditionEl ? conditionEl.textContent.trim() : null;
 
+                    // extract availability and format
                     const stockEl = variant.querySelector('.variant-main-info .variant-qty');
                     let stock = stockEl ? stockEl.textContent.trim(): null;
                     if (stock && stock.includes("In Stock")){
                         stock = "In Stock";
+                    } else if(stock && stock.includes("Out")){
+                        stock = "Out of Stock"
                     }
-                    console.log(stock)
-                    // const priceEl = variant.querySelector('.variant-buttons .add-to-cart-form .product-price-qty .price');
-                    // const price = priceEl ? price.textContent.trim(): null;
-                    // if (price){
-                    //    price = price.replace('CAD$ ','$').trim();
-                    // }
 
-                    return { condition, stock };
+                    // extract price and format
+                    const priceEl = variant.querySelector('.variant-buttons .add-to-cart-form .product-price-qty .price');
+                    let price = priceEl ? priceEl.textContent.trim(): null;
+                    if (price){
+                       price = price.replace('CAD$ ','$').trim();
+                    }
+
+                    return { condition, stock, price };
                 })
+                //filter out variants that are not in stock
+                .filter(variant => { return variant.stock === "In Stock"});
+
                 return { name, priceOptions };
             })
-            // filter out products that don't include all search terms
+            // filter out products that have no stock
+            .filter(product => { return product.priceOptions.length > 0})
+            // filter out products that don't include all search terms & are out of stock
             .filter(product => {
                 if (!product.name){
                     return false;
@@ -62,11 +73,13 @@ async function scrapeDollys(cardName) {
                 } 
             });
         }, searchTerms);
-        console.log('Products: ', products);
+        // console.log('Products: ', products);
+        console.log(JSON.stringify(products, null, 2));
+
         return products;
         
     } catch(err) {
-        console.error('Error scraping 401 Games: ', err.message);
+        console.error('Error scraping Dollys Toys & Games: ', err.message);
         return [];
     } finally {
         await browser.close();
