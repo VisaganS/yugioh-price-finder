@@ -37,26 +37,33 @@ async function scrapeHBV(cardName) {
         // evaluate page and extract product details
         const products = await page.evaluate((searchTerms) => {
  
-            const productCards = document.querySelectorAll('.product .inner');
+            const productCards = document.querySelectorAll('.store-pass-products .store-pass-product');
 
             return Array.from(productCards).map(card => {
                 // extract product name
-                const titleEl = card.querySelector('.product-card-items-wrapper .info-container .title-container .title-wrapper .title');
+                const titleEl = card.querySelector('.store-pass-product-info .store-pass-product-title');
                 const name = titleEl ? titleEl.textContent.trim() : null;
                 
-                // extract product price
-                const priceEl = card.querySelector('.product-card-items-wrapper .info-container .price-container .price')
-                let price = priceEl ? priceEl.textContent.trim() : null;
-                //remove CAD from price text
-                if (price) {
-                    price = price.replace('CAD', '').trim();
-                }
+                // retrieve price options based on condition
+                const priceOptions = [];
+                
+                const variantsEl = card.querySelectorAll(".store-pass-product-select-area .store-pass-product-select option");
+                variantsEl.forEach(variant => {
+                    
+                    //split text on " - " to seperate condition and price
+                    const parts = variant.textContent.trim().split(' - ');
 
-                // extract availability
-                const stockEl = card.querySelector('.product-card-items-wrapper .image-wrapper .in-stock-wrapper')
-                let stock = stockEl ? 'In Stock' : 'Out of Stock';
+                    //retrieve condition
+                    const condition = parts[0];
 
-                return { name, price, stock };
+                    //retrieve stock and price
+                    let stock = "In Stock";
+
+                    if (parts[1].includes("$")){
+                        price = parts[1];
+                        priceOptions.push({condition, stock, price});
+                    }
+                });
             })
             // filter out products that don't include all search terms
             .filter(product => {
