@@ -23,27 +23,33 @@ async function scrapeHBV(cardName) {
         await page.evaluate(() => {
 
             // find instock filter
-            const filters = document.querySelector('.store-pass-collapsible-menu-content .RhJb8nzabad51bGhpkvw');
+            const filters = document.querySelectorAll('.store-pass-collapsible-menu-content .RhJb8nzabad51bGhpkvw');
             const inStockFilter = Array.from(filters).find(filter => filter.textContent.trim().includes('In Stock'));
             
             // click on filter
             if(inStockFilter){
-                inStockLink.click();
+                inStockFilter.click();
             } else {
                 console.log("No In Stock filter found");
             }
         })
 
+        // wait for results to load from clicking instock filter
+        await page.waitForFunction(() => {
+            return document.querySelectorAll('.store-pass-products-section .store-pass-product').length > 0;
+          }, { timeout: 10000 })
+
         // evaluate page and extract product details
         const products = await page.evaluate((searchTerms) => {
  
-            const productCards = document.querySelectorAll('.store-pass-products .store-pass-product');
+            const productCards = document.querySelectorAll('.store-pass-products-section .store-pass-product');
 
             return Array.from(productCards).map(card => {
                 // extract product name
-                const titleEl = card.querySelector('.store-pass-product-info .store-pass-product-title');
+                const titleEl = card.querySelector('.store-pass-product-info .store-pass-product-title a');
                 const name = titleEl ? titleEl.textContent.trim() : null;
-                
+                console.log(name);
+
                 // retrieve price options based on condition
                 const priceOptions = [];
                 
@@ -56,14 +62,20 @@ async function scrapeHBV(cardName) {
                     //retrieve condition
                     const condition = parts[0];
 
-                    //retrieve stock and price
+                    //only push if there's a dollar sign to filter out not in stock variants
                     let stock = "In Stock";
 
                     if (parts[1].includes("$")){
-                        price = parts[1];
+                        let price = parts[1];
+                        
                         priceOptions.push({condition, stock, price});
                     }
                 });
+                return {name, priceOptions};
+            })
+            //filter out products with no variants
+            .filter(product => {
+                if (product.priceOptions.length != 0) { return product };
             })
             // filter out products that don't include all search terms
             .filter(product => {
@@ -75,7 +87,9 @@ async function scrapeHBV(cardName) {
                 } 
             }); 
         }, searchTerms);
-        console.log('Products: ', products);
+
+        console.log(JSON.stringify(products, null, 2));
+
         return products;
         
     } catch(err) {
