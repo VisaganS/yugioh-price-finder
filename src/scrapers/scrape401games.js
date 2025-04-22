@@ -46,7 +46,8 @@ async function scrape401games(cardName) {
                 const stockEl = card.querySelector('.product-card-items-wrapper .image-wrapper .in-stock-wrapper')
                 let stock = stockEl ? 'In Stock' : 'Out of Stock';
 
-                return { name, price, stock };
+                let priceOptions = { condition: "N/A", stock, price };
+                return { name, priceOptions };
             })
             // filter out products that don't include all search terms
             .filter(product => {
