@@ -86,4 +86,5 @@ async function scrapeDollys(cardName) {
     }
 }
 
+// scrapeDollys("Dark Magician");
 module.exports = { scrapeDollys };

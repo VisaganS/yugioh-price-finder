@@ -46,7 +46,9 @@ async function scrape401games(cardName) {
                 const stockEl = card.querySelector('.product-card-items-wrapper .image-wrapper .in-stock-wrapper')
                 let stock = stockEl ? 'In Stock' : 'Out of Stock';
 
-                let priceOptions = { condition: "N/A", stock, price };
+                condition = "N/A"
+
+                let priceOptions = [{ condition, stock, price }];
                 return { name, priceOptions };
             })
             // filter out products that don't include all search terms
@@ -59,7 +61,9 @@ async function scrape401games(cardName) {
                 } 
             }); 
         }, searchTerms);
-        console.log('Products: ', products);
+
+        console.log(JSON.stringify(products, null, 2));
+
         return products;
         
     } catch(err) {
@@ -70,4 +74,5 @@ async function scrape401games(cardName) {
     }
 }
 
+// scrape401games("Dark Magician");
 module.exports = { scrape401games };

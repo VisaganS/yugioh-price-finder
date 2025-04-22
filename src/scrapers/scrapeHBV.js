@@ -99,5 +99,5 @@ async function scrapeHBV(cardName) {
         await browser.close();
     }
 }
-
+// scrapeHBV("Dark Magician");
 module.exports = { scrapeHBV };
