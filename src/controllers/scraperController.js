@@ -12,11 +12,16 @@ const { scrapeHBV } = require('../scrapers/scrapeHBV')
 async function getCardPrices(cardName) {
 
     // Run each scraper in parallel
-    const [dollyResults, games401Results, hbvResults ] =  await Promise.all([
+    const [dollysResults, games401Results, hbvResults ] =  await Promise.all([
         scrapeDollys(cardName),
         scrape401games(cardName),
         scrapeHBV(cardName)
     ]);
     
-    // Flattened returned results
+    // Merge Results
+    const combined = [
+        ...dollysResults,
+        ...games401Results,
+        ...hbvResults,
+      ];
 }
