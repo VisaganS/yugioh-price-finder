@@ -25,3 +25,5 @@ async function getCardPrices(cardName) {
         ...hbvResults,
       ];
 }
+
+module.exports = { getCardPrices };

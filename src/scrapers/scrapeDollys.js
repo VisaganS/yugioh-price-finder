@@ -85,3 +85,5 @@ async function scrapeDollys(cardName) {
         await browser.close();
     }
 }
+
+module.exports = { scrapeDollys };

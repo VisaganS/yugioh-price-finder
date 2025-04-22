@@ -9,7 +9,7 @@ async function scrapeHBV(cardName) {
 
     console.log("Navigating to:", searchURL);
     // launch headless browser
-    const browser = await puppeteer.launch({headless: false});
+    const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
@@ -100,4 +100,4 @@ async function scrapeHBV(cardName) {
     }
 }
 
-scrapeHBV("Dark Magician");
+module.exports = { scrapeHBV };

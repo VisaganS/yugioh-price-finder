@@ -69,3 +69,5 @@ async function scrape401games(cardName) {
         await browser.close();
     }
 }
+
+module.exports = { scrape401games };
