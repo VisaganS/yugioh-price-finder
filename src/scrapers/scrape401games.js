@@ -7,17 +7,16 @@ async function scrape401games(cardName) {
     const searchURL = `https://store.401games.ca/pages/search-results?q=${searchTerm}`
     const searchTerms = cardName.trim().toLowerCase().split(/\s+/); // Used to filter the searched card name apart from similar names returned by webscraper
 
-    console.log("Navigating to:", searchURL);
     // launch headless browser
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
-    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    // page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
     try {
         await page.goto(searchURL, { waitUntil: 'networkidle2' });
         await new Promise(resolve => setTimeout(resolve, 5000)); 
-        await page.evaluate(() => { debugger; });
+        // await page.evaluate(() => { debugger; });
 
         // evaluate page and extract product details
         const products = await page.evaluate((searchTerms) => {
@@ -34,6 +33,10 @@ async function scrape401games(cardName) {
                 const titleEl = card.querySelector('.product-card-items-wrapper .info-container .title-container .title-wrapper .title');
                 const name = titleEl ? titleEl.textContent.trim() : null;
                 
+                // extract product link
+                const linkEl = card.querySelector('.product-card-items-wrapper .image-wrapper a')
+                const link = linkEl ? linkEl.href : null;
+
                 // extract product price
                 const priceEl = card.querySelector('.product-card-items-wrapper .info-container .price-container .price')
                 let price = priceEl ? priceEl.textContent.trim() : null;
@@ -49,7 +52,7 @@ async function scrape401games(cardName) {
                 condition = "N/A"
 
                 let priceOptions = [{ condition, stock, price }];
-                return { name, priceOptions };
+                return { name, link, priceOptions };
             })
             // filter out products that don't include all search terms
             .filter(product => {
@@ -62,7 +65,7 @@ async function scrape401games(cardName) {
             }); 
         }, searchTerms);
 
-        console.log(JSON.stringify(products, null, 2));
+        // console.log(JSON.stringify(products, null, 2));
 
         return products;
         
@@ -74,5 +77,4 @@ async function scrape401games(cardName) {
     }
 }
 
-// scrape401games("Dark Magician");
 module.exports = { scrape401games };

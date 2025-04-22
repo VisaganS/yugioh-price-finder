@@ -7,17 +7,16 @@ async function scrapeHBV(cardName) {
     const searchURL = `https://hobbiesville.com/search.php?product_line=YuGiOh&sort=Relevance&limit=30&name=${searchTerm}&search_query=${searchTerm}`
     const searchTerms = cardName.trim().toLowerCase().split(/\s+/); // Used to filter the searched card name apart from similar names returned by webscraper
 
-    console.log("Navigating to:", searchURL);
     // launch headless browser
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
-    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    // page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
     try {
         await page.goto(searchURL, { waitUntil: 'networkidle2' });
         await new Promise(resolve => setTimeout(resolve, 5000)); 
-        await page.evaluate(() => { debugger; });
+        // await page.evaluate(() => { debugger; });
 
         // evalulate page and click on in stock filter
         await page.evaluate(() => {
@@ -48,7 +47,10 @@ async function scrapeHBV(cardName) {
                 // extract product name
                 const titleEl = card.querySelector('.store-pass-product-info .store-pass-product-title a');
                 const name = titleEl ? titleEl.textContent.trim() : null;
-                console.log(name);
+
+                // extract product link
+                const linkEl = card.querySelector('.store-pass-product-image-container a')
+                const link = linkEl ? linkEl.href : null;
 
                 // retrieve price options based on condition
                 const priceOptions = [];
@@ -71,7 +73,7 @@ async function scrapeHBV(cardName) {
                         priceOptions.push({condition, stock, price});
                     }
                 });
-                return {name, priceOptions};
+                return {name, link, priceOptions};
             })
             //filter out products with no variants
             .filter(product => {
@@ -88,7 +90,7 @@ async function scrapeHBV(cardName) {
             }); 
         }, searchTerms);
 
-        console.log(JSON.stringify(products, null, 2));
+        // console.log(JSON.stringify(products, null, 2));
 
         return products;
         
@@ -99,5 +101,5 @@ async function scrapeHBV(cardName) {
         await browser.close();
     }
 }
-// scrapeHBV("Dark Magician");
+
 module.exports = { scrapeHBV };
