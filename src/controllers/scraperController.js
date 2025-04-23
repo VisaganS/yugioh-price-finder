@@ -71,5 +71,4 @@ async function getCardPrices(cardName) {
     return flatResults;
 }
 
-getCardPrices("Dark Magician");
 module.exports = { getCardPrices };
