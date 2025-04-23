@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const { debug } = require('../utils/logger');
 
 
 async function scrapeDollys(cardName) {
@@ -7,16 +8,21 @@ async function scrapeDollys(cardName) {
     const searchURL = `https://www.dollys.ca/products/search?q=${searchTerm}&c=228`
     const searchTerms = cardName.trim().toLowerCase().split(/\s+/); // Used to filter the searched card name apart from similar names returned by webscraper
 
+    debug("Navigating to:", searchURL);
+
     // launch headless browser
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
-    // page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    page.on('console', msg => debug('PAGE LOG:', msg.text()));
 
     try {
         await page.goto(searchURL, { waitUntil: 'networkidle2' });
-        await new Promise(resolve => setTimeout(resolve, 5000)); 
-        // await page.evaluate(() => { debugger; });
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        if (process.env.DEBUG){
+            await page.evaluate(() => { debugger; });
+        }
 
         // evaluate page and extract product details
         const products = await page.evaluate((searchTerms) => {
@@ -77,7 +83,7 @@ async function scrapeDollys(cardName) {
             });
         }, searchTerms);
 
-        // console.log(JSON.stringify(products, null, 2));
+        debug(JSON.stringify(products, null, 2));
 
         return products;
         

@@ -1,7 +1,7 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
-const port = 3000;
-
+const port = process.env.PORT;
 const { getCardPrices } = require('./controllers/scraperController.js');
 
 // define get request to retrieve cards
