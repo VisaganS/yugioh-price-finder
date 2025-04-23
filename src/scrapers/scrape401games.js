@@ -62,7 +62,10 @@ async function scrape401games(cardName) {
                     const lowerName = product.name.toLowerCase();
                     return searchTerms.every(term => lowerName.includes(term));
                 } 
-            }); 
+            })
+            .filter(product => {
+                return product.priceOptions[0].stock == 'In Stock';
+            })
         }, searchTerms);
 
         // console.log(JSON.stringify(products, null, 2));
