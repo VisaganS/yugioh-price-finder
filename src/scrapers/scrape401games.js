@@ -11,7 +11,13 @@ async function scrape401games(cardName) {
     debug('Navigating to:', searchURL);
 
     // launch headless browser
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+        ],
+    });
     const page = await browser.newPage();
 
     page.on('console', msg => debug('PAGE LOG:', msg.text()));
