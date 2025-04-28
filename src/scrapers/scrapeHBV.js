@@ -12,10 +12,13 @@ async function scrapeHBV(cardName) {
 
     // launch headless browser
     const browser = await puppeteer.launch({
+        executablePath: process.env.NODE_ENV === 'production' ? process.env.PUPPETEER_EXECUTABLE_PATH : puppeteer.executablePath(),
         headless: true,
         args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
+            "--single-process",
+            "--no-zygote",
         ],
     });
     const page = await browser.newPage();
