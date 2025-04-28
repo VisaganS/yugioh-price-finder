@@ -1,8 +1,12 @@
 require('dotenv').config();
+const cors = require('cors');
 const express = require('express');
 const app = express();
 const port = process.env.PORT;
 const { getCardPrices } = require('./controllers/scraperController.js');
+
+// allow access from all origins
+app.use(cors());
 
 // define get request to retrieve cards
 app.get('/card/:cardName', async (req, res) => {
