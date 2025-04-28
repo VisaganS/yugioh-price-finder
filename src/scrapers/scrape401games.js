@@ -26,7 +26,12 @@ async function scrape401games(cardName) {
     page.on('console', msg => debug('PAGE LOG:', msg.text()));
 
     try {
-        await page.goto(searchURL, { waitUntil: 'networkidle2' });
+        await page.goto(searchURL, 
+            {
+                waitUntil: 'domcontentloaded',
+                timeout: 60000,
+            }
+        );
         await new Promise(resolve => setTimeout(resolve, 5000));
         
         if (process.env.DEBUG){
